@@ -1,3 +1,14 @@
+# Next.js / Node
+frontend/.next/
+frontend/node_modules/
+frontend/next-env.d.ts
+frontend/.env.local
+frontend/.env*.local
+
+
+# Claude Code
+.claude/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -14,8 +25,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
