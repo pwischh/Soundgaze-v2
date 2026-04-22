@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { fetchSimilar, type TrackPoint, type Method, type Metric } from "../../lib/api";
+import { fetchSimilar, type TrackPoint, type Method } from "../../lib/api";
 
-export function useSongSelection(method: Method, metric: Metric) {
+export function useSongSelection(method: Method) {
   const [selectedTrack, setSelectedTrack] = useState<TrackPoint | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [neighbors, setNeighbors] = useState<TrackPoint[]>([]);
@@ -20,7 +20,7 @@ export function useSongSelection(method: Method, metric: Metric) {
       setNeighbors([]);
       setKnnIds(new Set());
       try {
-        const nbrs = await fetchSimilar(track.track_id, method, metric, 10);
+        const nbrs = await fetchSimilar(track.track_id, method, 10);
         if (signal.aborted) return;
         setNeighbors(nbrs);
         setKnnIds(new Set(nbrs.map((n) => n.track_id)));
@@ -30,7 +30,7 @@ export function useSongSelection(method: Method, metric: Metric) {
         if (!signal.aborted) setNeighborsLoading(false);
       }
     },
-    [method, metric],
+    [method],
   );
 
   const selectTrack = useCallback(
@@ -46,7 +46,7 @@ export function useSongSelection(method: Method, metric: Metric) {
     [fetchNeighbors],
   );
 
-  // Re-fetch neighbors when method or metric changes while a track is selected
+  // Re-fetch neighbors when method changes while a track is selected
   useEffect(() => {
     const track = selectedTrackRef.current;
     if (!track) return;
@@ -56,7 +56,7 @@ export function useSongSelection(method: Method, metric: Metric) {
     abortRef.current = ctrl;
     fetchNeighbors(track, ctrl.signal);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [method, metric]);
+  }, [method]);
 
   const closePanel = useCallback(() => {
     abortRef.current?.abort();

@@ -8,7 +8,6 @@ interface TrackPanelProps {
   isLoading: boolean;
   isOpen: boolean;
   onClose: () => void;
-  onRate: () => void;
 }
 
 const GENRE_COLOR: Record<string, string> = {
@@ -28,7 +27,6 @@ export default function TrackPanel({
   isLoading,
   isOpen,
   onClose,
-  onRate,
 }: TrackPanelProps) {
   if (!isOpen || !track) return null;
 
@@ -101,16 +99,6 @@ export default function TrackPanel({
         )}
       </div>
 
-      {/* Rate button */}
-      <div className="p-3 border-t-2 border-[#333]">
-        <button
-          onClick={onRate}
-          disabled={neighbors.length === 0}
-          className="w-full neo-btn-primary text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Rate
-        </button>
-      </div>
     </div>
   );
 }

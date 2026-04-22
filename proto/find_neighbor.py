@@ -1,25 +1,35 @@
 """
-Pick a random track from the embeddings and find its closest neighbor
-by cosine similarity. Prints both track names.
+Pick a random track and find its closest neighbor using the CLAP + acoustic
+hybrid similarity (alpha=0.5).
+
+hybrid_sim(A, B) = 0.5 * cosine(clap_A, clap_B) + 0.5 * cosine(acoustic_A, acoustic_B)
+Implemented via weighted concatenation so a single matmul cosine suffices.
 """
 
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 from config import EMBEDDINGS_DIR, FMA_METADATA_DIR
 
-EMBEDDINGS_PATH = EMBEDDINGS_DIR / "fma_small_embeddings.parquet"
-TRACKS_CSV = FMA_METADATA_DIR / "tracks.csv"
+# "v2" = 70-dim with density features + group weights; "v1" = original 66-dim
+ACOUSTIC_VERSION = "v2"
+
+CLAP_PATH     = EMBEDDINGS_DIR / "fma_small_clap.parquet"
+ACOUSTIC_PATH = EMBEDDINGS_DIR / f"fma_small_acoustic_{ACOUSTIC_VERSION}.parquet"
+SCALER_PATH   = EMBEDDINGS_DIR / f"acoustic_scaler_{ACOUSTIC_VERSION}.npz"
+TRACKS_CSV    = FMA_METADATA_DIR / "tracks.csv"
+
+ALPHA = 0.5
+
+
+def normalize_rows(v: np.ndarray) -> np.ndarray:
+    n = np.linalg.norm(v, axis=1, keepdims=True)
+    return v / np.maximum(n, 1e-8)
 
 
 def load_tracks() -> pd.DataFrame:
-    # tracks.csv has 2 header rows forming a MultiIndex
     df = pd.read_csv(TRACKS_CSV, index_col=0, header=[0, 1])
-    # Flatten to just the columns we need
-    titles = df[("track", "title")]
-    artists = df[("artist", "name")]
-    return pd.DataFrame({"title": titles, "artist": artists})
+    return pd.DataFrame({"title": df[("track", "title")], "artist": df[("artist", "name")]})
 
 
 def track_label(track_id: int, meta: pd.DataFrame) -> str:
@@ -29,38 +39,67 @@ def track_label(track_id: int, meta: pd.DataFrame) -> str:
     return f"Track {track_id}"
 
 
-def cosine_similarity_matrix(embeddings: np.ndarray) -> np.ndarray:
-    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
-    normalized = embeddings / np.maximum(norms, 1e-8)
-    return normalized @ normalized.T
-
-
 def main() -> None:
-    print("Loading embeddings ...")
-    df = pd.read_parquet(EMBEDDINGS_PATH)
-    track_ids = df["track_id"].to_numpy()
-    embeddings = np.stack(df["embedding"].to_numpy())
+    print("Loading CLAP embeddings ...")
+    clap_df = pd.read_parquet(CLAP_PATH)
+    clap_df = clap_df.set_index("track_id")
+
+    print("Loading acoustic embeddings ...")
+    ac_df = pd.read_parquet(ACOUSTIC_PATH)
+    ac_df = ac_df.set_index("track_id")
+
+    # Inner join — only tracks present in both parquets
+    common_ids = clap_df.index.intersection(ac_df.index)
+    clap_df = clap_df.loc[common_ids]
+    ac_df   = ac_df.loc[common_ids]
+    ids = common_ids.to_numpy()
+    print(f"Corpus: {len(ids)} tracks (intersection of CLAP + acoustic)\n")
+
+    clap_emb = np.stack(clap_df["embedding"].to_numpy()).astype(np.float32)
+    ac_emb   = np.stack(ac_df["features"].to_numpy()).astype(np.float32)
+
+    # Acoustic features are already z-scored in the parquet (from embed_acoustic.py),
+    # but load scaler as a sanity check
+    if SCALER_PATH.exists():
+        print(f"Scaler found at {SCALER_PATH} — acoustic features already standardized.")
+    else:
+        print("WARNING: acoustic_scaler.npz not found — features may be unscaled.")
+
+    # Weighted concatenation: cosine([√α·norm(clap) | √(1-α)·norm(ac)])
+    # == α·cosine(clap) + (1-α)·cosine(ac)
+    hybrid = np.concatenate([
+        np.sqrt(ALPHA)       * normalize_rows(clap_emb),
+        np.sqrt(1.0 - ALPHA) * normalize_rows(ac_emb),
+    ], axis=1)
+
+    normed = normalize_rows(hybrid)
 
     print("Loading track metadata ...")
     meta = load_tracks()
 
+    # Pre-normalize component halves for breakdown display
+    clap_n = normalize_rows(clap_emb)
+    ac_n   = normalize_rows(ac_emb)
+
     rng = np.random.default_rng()
-    query_idx = rng.integers(len(track_ids))
-    query_id = track_ids[query_idx]
+    query_idx = int(rng.integers(len(ids)))
+    query_id  = int(ids[query_idx])
 
-    # Cosine similarity of query against all tracks
-    query_vec = embeddings[query_idx]
-    norms = np.linalg.norm(embeddings, axis=1)
-    query_norm = np.linalg.norm(query_vec)
-    sims = (embeddings @ query_vec) / np.maximum(norms * query_norm, 1e-8)
-
-    # Mask out the query itself and pick highest similarity
+    sims = normed @ normed[query_idx]
     sims[query_idx] = -1
-    neighbor_idx = int(np.argmax(sims))
-    neighbor_id = track_ids[neighbor_idx]
 
-    print(f"\nQuery:    [{query_id}] {track_label(query_id, meta)}")
-    print(f"Neighbor: [{neighbor_id}] {track_label(neighbor_id, meta)}  (sim={sims[neighbor_idx]:.4f})")
+    top5_idx = np.argsort(-sims)[:5]
+
+    print(f"\nQuery: [{query_id}] {track_label(query_id, meta)}\n")
+    print(f"  {'Rank':<6} {'Track':<50} {'Hybrid':>8} {'CLAP':>8} {'Acoustic':>10}")
+    print("  " + "-" * 84)
+    for rank, idx in enumerate(top5_idx, 1):
+        tid        = int(ids[idx])
+        hybrid_cos = float(sims[idx])
+        clap_cos   = float(clap_n[idx] @ clap_n[query_idx])
+        ac_cos     = float(ac_n[idx]   @ ac_n[query_idx])
+        label      = track_label(tid, meta)[:48]
+        print(f"  {rank:<6} [{tid}] {label:<48} {hybrid_cos:>8.4f} {clap_cos:>8.4f} {ac_cos:>10.4f}")
 
 
 if __name__ == "__main__":

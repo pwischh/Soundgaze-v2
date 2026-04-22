@@ -5,13 +5,10 @@ import Navbar from "../components/Navbar";
 import PointCloudViewer from "../components/PointCloudViewer";
 import MethodSwitcher from "../components/MethodSwitcher";
 import TrackPanel from "../components/TrackPanel";
-import EvalModal from "../components/EvalModal";
-import MetricsBar from "../components/MetricsBar";
 import { usePointCloud } from "./hooks/usePointCloud";
 import { useSongSelection } from "./hooks/useSongSelection";
-import type { Method, Metric, TrackPoint } from "../lib/api";
+import type { Method, TrackPoint } from "../lib/api";
 
-// Legend entries
 const LEGEND = [
   { color: "#FF2D2D", label: "Selected" },
   { color: "#FF6B35", label: "k-NN Neighbors" },
@@ -20,8 +17,6 @@ const LEGEND = [
 
 export default function ExplorePage() {
   const [method, setMethod] = useState<Method>("umap");
-  const metric: Metric = "cosine"; // expose in UI later if needed
-  const [evalOpen, setEvalOpen] = useState(false);
 
   const { points, isLoading } = usePointCloud(method);
 
@@ -33,16 +28,12 @@ export default function ExplorePage() {
     neighborsLoading,
     selectTrack,
     closePanel,
-  } = useSongSelection(method, metric);
+  } = useSongSelection(method);
 
-  const handleMethodChange = useCallback((m: Method) => {
-    setMethod(m);
-  }, []);
+  const handleMethodChange = useCallback((m: Method) => setMethod(m), []);
 
   const handlePointClick = useCallback(
-    (point: TrackPoint) => {
-      selectTrack(point);
-    },
+    (point: TrackPoint) => selectTrack(point),
     [selectTrack],
   );
 
@@ -50,7 +41,6 @@ export default function ExplorePage() {
     <main className="relative w-screen h-screen bg-near-black overflow-hidden flex flex-col">
       <Navbar />
 
-      {/* Canvas + overlays */}
       <div className="relative flex-1 overflow-hidden flex">
 
         {/* Three.js canvas */}
@@ -90,11 +80,6 @@ export default function ExplorePage() {
             </div>
           </div>
         )}
-
-        {/* Metrics bar — top right */}
-        <div className="absolute top-3 right-3 z-10">
-          <MetricsBar method={method} />
-        </div>
 
         {/* Legend — left edge */}
         <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
@@ -141,23 +126,10 @@ export default function ExplorePage() {
             isLoading={neighborsLoading}
             isOpen={panelOpen}
             onClose={closePanel}
-            onRate={() => setEvalOpen(true)}
           />
         </div>
 
       </div>
-
-      {/* Human evaluation modal */}
-      {selectedTrack && (
-        <EvalModal
-          isOpen={evalOpen}
-          onClose={() => setEvalOpen(false)}
-          seedTrack={selectedTrack}
-          neighbors={neighbors}
-          method={method}
-          metric={metric}
-        />
-      )}
     </main>
   );
 }

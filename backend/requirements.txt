@@ -1,0 +1,17 @@
+# Web
+fastapi
+uvicorn[standard]
+
+# Data
+numpy
+pandas
+pyarrow
+
+# ML / audio
+torch
+torchaudio
+librosa
+scipy
+scikit-learn
+laion-clap
+umap-learn
