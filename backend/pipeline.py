@@ -17,7 +17,9 @@ import librosa
 from .config import (
     CLAP_PATH, ACOUSTIC_PATH, SCALER_PATH, REDUCED_DIR, META_DIR,
     FMA_SMALL_DIR, CLAP_SR, LIBROSA_SR, DURATION, CLAP_LEN, CLAP_BATCH, METHODS,
+    DEV_MODE, DEV_LIMIT,
 )
+
 from .features import acoustic_features, normalize_rows, GROUP_WEIGHTS
 
 # ---------------------------------------------------------------------------
@@ -85,6 +87,8 @@ def generate_acoustic() -> None:
     raw_feats: list[np.ndarray] = []
 
     for i, path in enumerate(mp3_files):
+        if DEV_MODE and len(tid_list) >= DEV_LIMIT:
+            break
         try:
             audio, _ = librosa.load(path, sr=LIBROSA_SR, mono=True, duration=DURATION)
             if len(audio) < LIBROSA_SR:
@@ -93,8 +97,8 @@ def generate_acoustic() -> None:
             raw_feats.append(acoustic_features(audio, LIBROSA_SR))
         except Exception:
             continue
-        if (i + 1) % 200 == 0:
-            print(f"  {i + 1}/{len(mp3_files)} ...")
+        if (i + 1) % 50 == 0:
+            print(f"  {len(tid_list)} tracks processed ...")
 
     matrix = np.stack(raw_feats)
     mu     = matrix.mean(axis=0)
@@ -164,7 +168,7 @@ def load_state() -> None:
     clap_df = pd.read_parquet(CLAP_PATH).set_index("track_id")
     ac_df   = pd.read_parquet(ACOUSTIC_PATH).set_index("track_id")
 
-    common  = clap_df.index.intersection(ac_df.index)
+    common = clap_df.index.intersection(ac_df.index)
     track_ids = common.to_numpy(dtype=np.int64)
 
     clap_mat = np.stack(clap_df.loc[common]["embedding"].to_numpy()).astype(np.float32)
