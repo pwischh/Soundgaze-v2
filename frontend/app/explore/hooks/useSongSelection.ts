@@ -3,7 +3,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { fetchSimilar, type TrackPoint, type Method } from "../../lib/api";
 
-export function useSongSelection(method: Method) {
+interface SpawnAPI {
+  spawnPoints: (pts: TrackPoint[]) => void;
+  clearSpawned: () => void;
+  getAllPointsForMethod: (m: Method) => TrackPoint[];
+  displayedIdsRef: React.RefObject<Set<number>>;
+}
+
+export function useSongSelection(method: Method, spawn: SpawnAPI) {
   const [selectedTrack, setSelectedTrack] = useState<TrackPoint | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [neighbors, setNeighbors] = useState<TrackPoint[]>([]);
@@ -22,15 +29,25 @@ export function useSongSelection(method: Method) {
       try {
         const nbrs = await fetchSimilar(track.track_id, method, 10);
         if (signal.aborted) return;
+
         setNeighbors(nbrs);
         setKnnIds(new Set(nbrs.map((n) => n.track_id)));
+
+        const allById = new Map(
+          spawn.getAllPointsForMethod(method).map((p) => [p.track_id, p]),
+        );
+        const toSpawn = nbrs
+          .filter((n) => !spawn.displayedIdsRef.current?.has(n.track_id))
+          .map((n) => allById.get(n.track_id))
+          .filter((p): p is TrackPoint => p !== undefined);
+        if (toSpawn.length > 0) spawn.spawnPoints(toSpawn);
       } catch {
         if (!signal.aborted) console.error("fetchSimilar failed");
       } finally {
         if (!signal.aborted) setNeighborsLoading(false);
       }
     },
-    [method],
+    [method, spawn],
   );
 
   const selectTrack = useCallback(
@@ -39,14 +56,14 @@ export function useSongSelection(method: Method) {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
 
+      spawn.clearSpawned();
       setSelectedTrack(track);
       setPanelOpen(true);
       fetchNeighbors(track, ctrl.signal);
     },
-    [fetchNeighbors],
+    [fetchNeighbors, spawn],
   );
 
-  // Re-fetch neighbors when method changes while a track is selected
   useEffect(() => {
     const track = selectedTrackRef.current;
     if (!track) return;
@@ -60,12 +77,13 @@ export function useSongSelection(method: Method) {
 
   const closePanel = useCallback(() => {
     abortRef.current?.abort();
+    spawn.clearSpawned();
     setSelectedTrack(null);
     setPanelOpen(false);
     setNeighbors([]);
     setKnnIds(new Set());
     setNeighborsLoading(false);
-  }, []);
+  }, [spawn]);
 
   return {
     selectedTrack,

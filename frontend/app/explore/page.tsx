@@ -18,7 +18,14 @@ const LEGEND = [
 export default function ExplorePage() {
   const [method, setMethod] = useState<Method>("umap");
 
-  const { points, isLoading } = usePointCloud(method);
+  const {
+    points,
+    isLoading,
+    spawnPoints,
+    clearSpawned,
+    getAllPointsForMethod,
+    displayedIdsRef,
+  } = usePointCloud(method);
 
   const {
     selectedTrack,
@@ -28,7 +35,12 @@ export default function ExplorePage() {
     neighborsLoading,
     selectTrack,
     closePanel,
-  } = useSongSelection(method);
+  } = useSongSelection(method, {
+    spawnPoints,
+    clearSpawned,
+    getAllPointsForMethod,
+    displayedIdsRef,
+  });
 
   const handleMethodChange = useCallback((m: Method) => setMethod(m), []);
 
