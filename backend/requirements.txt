@@ -10,6 +10,7 @@ pyarrow
 # ML / audio
 torch
 torchaudio
+torchvision
 librosa
 scipy
 scikit-learn

@@ -61,6 +61,8 @@ def generate_clap(model) -> None:
         return a[:CLAP_LEN] if len(a) >= CLAP_LEN else np.pad(a, (0, CLAP_LEN - len(a)))
 
     for i, path in enumerate(mp3_files):
+        if DEV_MODE and len(records) + len(batch_audio) >= DEV_LIMIT:
+            break
         try:
             audio, _ = librosa.load(path, sr=CLAP_SR, mono=True, duration=DURATION)
             batch_audio.append(_fix_length(audio))
@@ -69,8 +71,8 @@ def generate_clap(model) -> None:
             continue
         if len(batch_audio) >= CLAP_BATCH:
             _flush()
-        if (i + 1) % 500 == 0:
-            print(f"  {i + 1}/{len(mp3_files)} ...")
+        if (i + 1) % 50 == 0:
+            print(f"  {len(records) + len(batch_audio)} tracks processed ...")
 
     _flush()
     pd.DataFrame(records).to_parquet(CLAP_PATH, index=False)

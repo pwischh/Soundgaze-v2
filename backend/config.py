@@ -20,7 +20,7 @@ DEV_MODE  = True
 DEV_LIMIT = 200
 
 _suffix       = "_dev" if DEV_MODE else ""
-CLAP_PATH     = EMB_DIR / "fma_small_clap.parquet"                        # always full
+CLAP_PATH     = EMB_DIR / f"fma_small_clap{_suffix}.parquet"
 ACOUSTIC_PATH = EMB_DIR / f"fma_small_acoustic_v2{_suffix}.parquet"
 SCALER_PATH   = EMB_DIR / f"acoustic_scaler_v2{_suffix}.npz"
 REDUCED_DIR   = DATA_DIR / f"reduced{_suffix}"
