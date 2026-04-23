@@ -36,7 +36,7 @@ export default function TrackPanel({
 
   return (
     <div
-      className="flex flex-col w-96 h-fit max-h-[calc(100vh-3.5rem)] overflow-hidden border-2 border-white/20 px-4"
+      className="flex flex-col w-96 max-h-[calc(100vh-7rem)] overflow-hidden border-2 border-white/20 px-4"
       style={{
         backgroundColor: "#121212",
         boxShadow: "-4px 4px 0px 0px rgba(255,255,255,0.15)",
@@ -71,7 +71,7 @@ export default function TrackPanel({
       </div>
 
       {/* Neighbors list */}
-      <div className="flex-1 overflow-y-auto py-4">
+      <div className="flex-1 overflow-y-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex flex-col mb-3">
           <h3 className="font-black text-[12px] uppercase tracking-widest text-white/80">
             Nearest Neighbors

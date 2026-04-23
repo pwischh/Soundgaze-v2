@@ -129,31 +129,35 @@ export default function ExplorePage() {
               boxShadow: "4px 4px 0px 0px rgba(255,255,255,0.15)",
             }}
           >
-            <div className="flex items-center justify-between mb-1 border-b border-white/10 pb-2">
-              <h4 className="font-black text-[12px] uppercase tracking-widest text-white/80">
+            <div className="flex-col items-center justify-between mb-1 border-b border-white/10 pb-2 gap-2">
+              <h4 className="font-black text-[12px] uppercase tracking-widest text-white/80 mb-2">
                 Genre Colors
               </h4>
-            </div>
-            <button
-              onClick={() => setGenreView((v) => !v)}
-              className="flex items-center justify-between w-full mb-1"
-            >
-              <span
-                className="font-black text-[10px] uppercase tracking-widest"
-                style={{ color: genreView ? "#1DB954" : "rgba(255,255,255,0.4)" }}
-              >
-                Color Points {genreView ? "ON" : "OFF"}
-              </span>
-              <div
-                className="relative w-10 h-5 rounded-full transition-colors duration-200 shrink-0"
-                style={{ backgroundColor: genreView ? "#1DB954" : "#333" }}
-              >
-                <span
-                  className="absolute left-0 top-1 w-[13px] h-[13px] rounded-full bg-white transition-transform duration-200"
-                  style={{ transform: genreView ? "translateX(23px)" : "translateX(4px)" }}
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={genreView}
+                  onChange={(e) => setGenreView(e.target.checked)}
+                  className="sr-only"
                 />
-              </div>
-            </button>
+                <span
+                  className="font-black text-[10px] uppercase tracking-widest"
+                  style={{ color: genreView ? "#1DB954" : "rgba(255,255,255,0.4)" }}
+                >
+                  Color Points
+                </span>
+                <div
+                  className="w-4 h-4 shrink-0 border-2 flex items-center justify-center transition-colors"
+                  style={{ borderColor: genreView ? "#1DB954" : "rgba(255,255,255,0.3)", backgroundColor: "transparent" }}
+                >
+                  {genreView && (
+                    <svg width="9" height="7" viewBox="0 0 11 9" fill="none">
+                      <path d="M1 4L4 7.5L10 1" stroke="#1DB954" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+              </label>
+            </div>
             {Object.entries(GENRE_COLOR).map(([genre, color]) => (
               <div key={genre} className="flex items-center gap-3">
                 <span
