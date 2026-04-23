@@ -17,8 +17,8 @@ const METHODS: { value: Method; label: string }[] = [
 export default function MethodSwitcher({ method, onChange, disabled }: MethodSwitcherProps) {
   return (
     <div
-      className="flex border-4 border-black"
-      style={{ boxShadow: "4px 4px 0px 0px rgba(255,255,255,0.25)" }}
+      className="flex border-2 border-white/20"
+      style={{ boxShadow: "0px 4px 0px 0px rgba(255,255,255,0.25)" }}
     >
       {METHODS.map(({ value, label }, i) => (
         <button
@@ -27,7 +27,7 @@ export default function MethodSwitcher({ method, onChange, disabled }: MethodSwi
           disabled={disabled}
           className={[
             "px-8 py-3.5 font-black text-sm uppercase tracking-widest transition-colors",
-            i > 0 ? "border-l-4 border-black" : "",
+            i > 0 ? "border-l border-white/20" : "",
             method === value
               ? "bg-spotify-green text-black"
               : "bg-spotify-black text-white hover:bg-white/10 disabled:opacity-40",

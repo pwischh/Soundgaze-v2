@@ -12,14 +12,14 @@ interface TrackPanelProps {
 }
 
 export const GENRE_COLOR: Record<string, string> = {
-  "Hip-Hop":       "#FF6B35",
-  "Pop":           "#A855F7",
-  "Folk":          "#22C55E",
-  "Experimental":  "#F59E0B",
+  "Electronic":    "#EC4899", 
   "Rock":          "#EF4444",
-  "International": "#06B6D4",
-  "Electronic":    "#EC4899", // Pink
-  "Instrumental":  "#3B82F6", // Distinct Blue
+  "Hip-Hop":       "#FF6B35",
+  "Experimental":  "#F59E0B",
+  "Folk":          "#22c530",
+  "International": "#2adecc",
+  "Instrumental":  "#3B82F6", 
+  "Pop":           "#A855F7",
 };
 
 export default function TrackPanel({
@@ -36,14 +36,14 @@ export default function TrackPanel({
 
   return (
     <div
-      className="flex flex-col w-96 h-fit max-h-[calc(100vh-3.5rem)] overflow-hidden border-y-2 border-l-2 border-[#333]"
+      className="flex flex-col w-96 h-fit max-h-[calc(100vh-3.5rem)] overflow-hidden border-2 border-white/20 px-4"
       style={{
         backgroundColor: "#121212",
-        boxShadow: "-6px 0px 0px 0px rgba(0,0,0,0.5)",
+        boxShadow: "-4px 4px 0px 0px rgba(255,255,255,0.15)",
       }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between p-4 border-b-2 border-[#333]">
+      <div className="flex items-start justify-between py-4 border-b-2 border-[#333]">
         <div className="flex-1 min-w-0 pr-2">
           <p className="font-black text-xs uppercase tracking-widest text-white/40 mb-0.5">
             Track #{track.track_id}
@@ -71,13 +71,13 @@ export default function TrackPanel({
       </div>
 
       {/* Neighbors list */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-black text-[9px] uppercase tracking-widest text-white/50">
+      <div className="flex-1 overflow-y-auto py-4">
+        <div className="flex flex-col mb-3">
+          <h3 className="font-black text-[12px] uppercase tracking-widest text-white/80">
             Nearest Neighbors
           </h3>
-          <span className="font-mono text-[8px] text-white/30 uppercase">
-            {neighbors.length} results
+          <span className="font-mono text-[12px] text-white/70 uppercase">
+            Top {neighbors.length} tracks
           </span>
         </div>
 
@@ -125,25 +125,25 @@ function NeighborRow({
   return (
     <button
       onClick={() => onSelect?.(track)}
-      className="group w-full flex flex-col text-left gap-1 px-3 py-2 border-2 border-[#333] hover:border-[#1DB954] hover:bg-[#1a1a1a] transition-all cursor-pointer"
+      className="group w-full flex flex-col text-left gap-1 px-3 py-2 border-2 border-[#333] hover:border-[#1DB954] transition-colors cursor-pointer"
       style={{ backgroundColor: "#1c1c1c" }}
     >
       <div className="w-full flex items-center gap-3">
-        <span className="font-black text-[10px] text-white/30 w-4 shrink-0 text-right">
+        <span className="group-hover:text-[#1DB954] transition-colors font-black text-[16px] text-white/30 w-4 shrink-0 text-center mr-1">
           {rank}
         </span>
         <div
-          className="w-1.5 h-6 shrink-0"
+          className="w-1.5 h-10 shrink-0"
           style={{ backgroundColor: genreColor }}
         />
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <p className="font-black text-[11px] uppercase tracking-wide text-white truncate leading-tight mb-0.5">
             {track.title}
           </p>
-          <div className="flex items-center justify-between font-mono text-[9px] truncate">
+          <div className="flex items-center justify-between font-mono text-[12px] truncate">
             <span className="text-white/50">{track.artist}</span>
             {showScore && (
-              <span className="font-black text-[10px] text-black bg-[#1DB954] px-1.5 py-0.5 shrink-0 ml-2 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]">
+              <span className="font-black text-[12px] text-[#1DB954] px-1.5 py-0.5 shrink-0 ml-2 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)] opacity-0 group-hover:opacity-100 transition-opacity">
                 SIM: {score.toFixed(3)}
               </span>
             )}
@@ -151,13 +151,6 @@ function NeighborRow({
         </div>
       </div>
       
-      {/* Extra Info on Hover */}
-      <div className="hidden group-hover:flex flex-col w-full pt-2 mt-1 border-t-2 border-[#333]/50 font-mono text-[9px] text-[#1DB954] tracking-widest uppercase">
-        <div className="flex justify-between w-full">
-          <span>ID: {track.track_id}</span>
-          <span>GENRE: {track.genre}</span>
-        </div>
-      </div>
     </button>
   );
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { fetchPoints, type Method, type TrackPoint } from "../../lib/api";
 
 const ALL_METHODS: Method[] = ["umap", "tsne", "pca"];
-const DISPLAY_LIMIT = 4000;
+const DISPLAY_LIMIT = 2000;
 
 function randomSample(arr: TrackPoint[], n: number): TrackPoint[] {
   if (arr.length <= n) return arr;

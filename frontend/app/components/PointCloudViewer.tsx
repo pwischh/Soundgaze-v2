@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CameraControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { TrackPoint } from "../lib/api";
+import { GENRE_COLOR } from "./TrackPanel";
 
 // ---------------------------------------------------------------------------
 // Colors
@@ -13,6 +14,7 @@ import type { TrackPoint } from "../lib/api";
 const COLOR_DEFAULT  = new THREE.Color("#4a4a5a");
 const COLOR_SELECTED = new THREE.Color("#FF2D2D");
 const COLOR_NEIGHBOR = new THREE.Color("#FF6B35");
+const COLOR_GENRE_FALLBACK = new THREE.Color("#6b7280");
 
 // ---------------------------------------------------------------------------
 // Props
@@ -23,6 +25,7 @@ export interface PointCloudViewerProps {
   knnIds: Set<number>;
   selectedId: number | null;
   onPointClick: (point: TrackPoint) => void;
+  genreView: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,6 +71,7 @@ function PointCloud({
   points,
   knnIds,
   selectedId,
+  genreView,
   onHover,
   mouseNDC,
   hoveredRef,
@@ -93,19 +97,21 @@ function PointCloud({
     return { positions: pos, renderPoints: points };
   }, [points]);
 
-  // Colors — depend on selection/knn state, recalculate independently of positions
+  // Colors — depend on selection/knn/genreView state
   const colors = useMemo(() => {
     const col = new Float32Array(points.length * 3);
-    points.forEach(({ track_id }, i) => {
-      const c = track_id === selectedId  ? COLOR_SELECTED
-              : knnIds.has(track_id)     ? COLOR_NEIGHBOR
-              : COLOR_DEFAULT;
+    points.forEach(({ track_id, genre }, i) => {
+      let c: THREE.Color;
+      if (track_id === selectedId)  c = COLOR_SELECTED;
+      else if (knnIds.has(track_id)) c = COLOR_NEIGHBOR;
+      else if (genreView) c = new THREE.Color(GENRE_COLOR[genre] ?? COLOR_GENRE_FALLBACK);
+      else c = COLOR_DEFAULT;
       col[i * 3]     = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
     });
     return col;
-  }, [points, knnIds, selectedId]);
+  }, [points, knnIds, selectedId, genreView]);
 
   // Screen-space hover: project every point to NDC each frame, find closest to cursor.
   useFrame(() => {
@@ -187,6 +193,7 @@ export default function PointCloudViewer({
   knnIds,
   selectedId,
   onPointClick,
+  genreView,
 }: PointCloudViewerProps) {
   const [hoveredPoint, setHoveredPoint] = useState<TrackPoint | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -244,6 +251,7 @@ export default function PointCloudViewer({
           points={points}
           knnIds={knnIds}
           selectedId={selectedId}
+          genreView={genreView}
           onHover={setHoveredPoint}
           mouseNDC={mouseNDC}
           hoveredRef={hoveredRef}

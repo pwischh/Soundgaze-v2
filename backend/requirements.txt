@@ -16,3 +16,5 @@ scipy
 scikit-learn
 laion-clap
 umap-learn
+matplotlib
+timbremetrics @ git+https://github.com/tiianhk/timbremetrics.git

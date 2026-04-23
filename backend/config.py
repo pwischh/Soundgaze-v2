@@ -16,7 +16,7 @@ METHODS = ["umap", "tsne", "pca"]
 
 # Set to True to cap the corpus at DEV_LIMIT tracks for fast frontend testing.
 # Dev mode writes to separate _dev files so the full corpus files are never touched.
-DEV_MODE  = True
+DEV_MODE  = False
 DEV_LIMIT = 200
 
 _suffix       = "_dev" if DEV_MODE else ""

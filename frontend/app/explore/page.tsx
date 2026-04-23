@@ -10,13 +10,14 @@ import { useSongSelection } from "./hooks/useSongSelection";
 import type { Method, TrackPoint } from "../lib/api";
 
 const LEGEND = [
-  { color: "#FF2D2D", label: "Selected" },
-  { color: "#FF6B35", label: "k-NN Neighbors" },
+  { color: "#FF2D2D", label: "Selected Track" },
+  { color: "#FF6B35", label: "Nearest Neighbors" },
   { color: "#4a4a5a", label: "All Tracks" },
 ];
 
 export default function ExplorePage() {
   const [method, setMethod] = useState<Method>("umap");
+  const [genreView, setGenreView] = useState(false);
 
   const {
     points,
@@ -62,6 +63,7 @@ export default function ExplorePage() {
             knnIds={knnIds}
             selectedId={selectedTrack?.track_id ?? null}
             onPointClick={handlePointClick}
+            genreView={genreView}
           />
         </div>
 
@@ -102,10 +104,15 @@ export default function ExplorePage() {
               boxShadow: "4px 4px 0px 0px rgba(255,255,255,0.15)",
             }}
           >
+            <div className="flex items-center justify-between mb-1 border-b border-white/10 pb-2">
+              <h4 className="font-black text-[12px] uppercase tracking-widest text-white/80">
+                Point Colors
+              </h4>
+            </div>
             {LEGEND.map(({ color, label }) => (
               <div key={label} className="flex items-center gap-3">
                 <span
-                  className="shrink-0 rounded-full"
+                  className="shrink-0"
                   style={{ width: 12, height: 12, backgroundColor: color }}
                 />
                 <span className="font-black text-xs uppercase tracking-widest text-white/70">
@@ -122,16 +129,38 @@ export default function ExplorePage() {
               boxShadow: "4px 4px 0px 0px rgba(255,255,255,0.15)",
             }}
           >
-            <h4 className="font-black text-[10px] uppercase tracking-widest text-white/40 mb-1 border-b border-white/10 pb-2">
-              Genre Colors
-            </h4>
+            <div className="flex items-center justify-between mb-1 border-b border-white/10 pb-2">
+              <h4 className="font-black text-[12px] uppercase tracking-widest text-white/80">
+                Genre Colors
+              </h4>
+            </div>
+            <button
+              onClick={() => setGenreView((v) => !v)}
+              className="flex items-center justify-between w-full mb-1"
+            >
+              <span
+                className="font-black text-[10px] uppercase tracking-widest"
+                style={{ color: genreView ? "#1DB954" : "rgba(255,255,255,0.4)" }}
+              >
+                Color Points {genreView ? "ON" : "OFF"}
+              </span>
+              <div
+                className="relative w-10 h-5 rounded-full transition-colors duration-200 shrink-0"
+                style={{ backgroundColor: genreView ? "#1DB954" : "#333" }}
+              >
+                <span
+                  className="absolute left-0 top-1 w-[13px] h-[13px] rounded-full bg-white transition-transform duration-200"
+                  style={{ transform: genreView ? "translateX(23px)" : "translateX(4px)" }}
+                />
+              </div>
+            </button>
             {Object.entries(GENRE_COLOR).map(([genre, color]) => (
               <div key={genre} className="flex items-center gap-3">
                 <span
                   className="shrink-0"
                   style={{ width: 12, height: 12, backgroundColor: color }}
                 />
-                <span className="font-black text-[10px] uppercase tracking-widest text-white/70">
+                <span className="font-black text-[12px] uppercase tracking-widest text-white/70">
                   {genre}
                 </span>
               </div>
@@ -150,9 +179,9 @@ export default function ExplorePage() {
 
         {/* Track panel — right edge (slides in) */}
         <div
-          className="absolute right-0 top-14 z-10 transition-transform duration-300 ease-in-out"
+          className="absolute right-4 top-1/2 z-10 transition-transform duration-300 ease-in-out"
           style={{
-            transform: panelOpen ? "translateX(0)" : "translateX(100%)",
+            transform: panelOpen ? "translateX(0) translateY(-50%)" : "translateX(calc(100% + 1rem)) translateY(-50%)",
           }}
         >
           <TrackPanel
