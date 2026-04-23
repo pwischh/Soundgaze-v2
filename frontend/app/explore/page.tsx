@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import PointCloudViewer from "../components/PointCloudViewer";
 import MethodSwitcher from "../components/MethodSwitcher";
-import TrackPanel from "../components/TrackPanel";
+import TrackPanel, { GENRE_COLOR } from "../components/TrackPanel";
 import { usePointCloud } from "./hooks/usePointCloud";
 import { useSongSelection } from "./hooks/useSongSelection";
 import type { Method, TrackPoint } from "../lib/api";
@@ -93,8 +93,8 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* Legend — left edge */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+        {/* Legends — left edge */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-4">
           <div
             className="flex flex-col gap-2 px-4 py-4 border-2 border-white/20"
             style={{
@@ -110,6 +110,29 @@ export default function ExplorePage() {
                 />
                 <span className="font-black text-xs uppercase tracking-widest text-white/70">
                   {label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div
+            className="flex flex-col gap-2 px-4 py-4 border-2 border-white/20"
+            style={{
+              backgroundColor: "rgba(8,9,12,0.85)",
+              boxShadow: "4px 4px 0px 0px rgba(255,255,255,0.15)",
+            }}
+          >
+            <h4 className="font-black text-[10px] uppercase tracking-widest text-white/40 mb-1 border-b border-white/10 pb-2">
+              Genre Colors
+            </h4>
+            {Object.entries(GENRE_COLOR).map(([genre, color]) => (
+              <div key={genre} className="flex items-center gap-3">
+                <span
+                  className="shrink-0"
+                  style={{ width: 12, height: 12, backgroundColor: color }}
+                />
+                <span className="font-black text-[10px] uppercase tracking-widest text-white/70">
+                  {genre}
                 </span>
               </div>
             ))}
@@ -138,6 +161,7 @@ export default function ExplorePage() {
             isLoading={neighborsLoading}
             isOpen={panelOpen}
             onClose={closePanel}
+            onSelectNeighbor={handlePointClick}
           />
         </div>
 
