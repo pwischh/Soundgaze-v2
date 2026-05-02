@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pip install -r requirements-deploy.txt"
+buildCommand = "python -m pip install -r requirements-deploy.txt"
 
 [deploy]
 startCommand = "python -m uvicorn backend.api:app --host 0.0.0.0 --port $PORT"
