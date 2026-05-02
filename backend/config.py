@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 ROOT          = Path(__file__).resolve().parent.parent   # Soundgaze-v2/
@@ -15,9 +16,9 @@ CLAP_BATCH = 16
 
 METHODS = ["umap", "tsne", "pca"]
 
-# Set to True to cap the corpus at DEV_LIMIT tracks for fast frontend testing.
-# Dev mode writes to separate _dev files so the full corpus files are never touched.
-DEV_MODE  = False
+# DEV_MODE can be overridden by the DEV_MODE environment variable.
+# Set DEV_MODE=true in Railway variables to use the committed 200-track dev artifacts.
+DEV_MODE  = os.getenv("DEV_MODE", "false").lower() == "true"
 DEV_LIMIT = 200
 
 _suffix       = "_dev" if DEV_MODE else ""
