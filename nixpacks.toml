@@ -1,4 +1,0 @@
-providers = ["python"]
-
-[phases.install]
-cmds = ["python3 -m pip install -r requirements-deploy.txt"]
