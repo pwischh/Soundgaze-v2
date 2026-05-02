@@ -4,12 +4,16 @@
 
 export type Method = "pca" | "tsne" | "umap";
 export type Metric = "cosine" | "euclidean" | "manhattan";
-export type EvalRating = "similar" | "not_similar";
+export type EvalRating = { track_id: number; score: 0 | 1 };
 
 export interface EvalPayload {
-  evaluator: string;
+  evaluator_name: string;
   seed_track_id: number;
-  ratings: { track_id: number; rating: EvalRating }[];
+  method: Method;
+  metric: Metric;
+  k: number;
+  timestamp: string;
+  ratings: EvalRating[];
 }
 
 export interface TrackPoint {
