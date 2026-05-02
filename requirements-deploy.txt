@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+numpy
+pandas
+pyarrow
+scikit-learn
+librosa
+scipy
