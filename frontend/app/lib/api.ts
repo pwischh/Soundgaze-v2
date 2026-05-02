@@ -69,6 +69,21 @@ export async function fetchSimilar(
   return data.neighbors as Neighbor[];
 }
 
+export interface MetricSet {
+  silhouette: number;
+  davies_bouldin: number;
+  genre_purity_at_10: number;
+  trustworthiness: number;
+}
+
+export type MetricsResponse = Partial<Record<Method, MetricSet>>;
+
+export async function fetchMetrics(): Promise<MetricsResponse> {
+  const res = await fetch(`${API_BASE}/metrics`);
+  if (!res.ok) return {};
+  return res.json();
+}
+
 export async function submitEval(payload: EvalPayload): Promise<void> {
   await fetch(`${API_BASE}/eval/submit`, {
     method: "POST",
