@@ -3,6 +3,14 @@
 // ---------------------------------------------------------------------------
 
 export type Method = "pca" | "tsne" | "umap";
+export type Metric = "cosine" | "euclidean" | "manhattan";
+export type EvalRating = "similar" | "not_similar";
+
+export interface EvalPayload {
+  evaluator: string;
+  seed_track_id: number;
+  ratings: { track_id: number; rating: EvalRating }[];
+}
 
 export interface TrackPoint {
   track_id: number;
@@ -55,4 +63,12 @@ export async function fetchSimilar(
   if (!res.ok) throw new Error(`fetchSimilar failed: ${res.status}`);
   const data = await res.json();
   return data.neighbors as Neighbor[];
+}
+
+export async function submitEval(payload: EvalPayload): Promise<void> {
+  await fetch(`${API_BASE}/eval/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
