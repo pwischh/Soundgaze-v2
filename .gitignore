@@ -217,5 +217,18 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-data/
+# Raw audio files and zips (too large to commit — gigabytes)
+data/raw/
+data/**/*.zip
+
+# Pre-generated ML artifacts are committed (embeddings, reductions, slim metadata)
+# data/embeddings/*.parquet  ← tracked
+# data/embeddings/*.npz      ← tracked
+# data/reduced*/*.npy        ← tracked
+# data/fma_slim_metadata.json ← tracked
+
+# Project context/notes files (not part of the codebase)
+LOGISTICS.md
+CONTEXT.md
+FRONTEND_REDESIGN.md
 docs/

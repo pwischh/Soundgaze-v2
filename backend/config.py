@@ -5,6 +5,7 @@ DATA_DIR      = ROOT / "data"
 EMB_DIR       = DATA_DIR / "embeddings"
 FMA_SMALL_DIR = DATA_DIR / "raw" / "fma_small"
 META_DIR      = DATA_DIR / "raw" / "fma_metadata"
+SLIM_META_PATH = DATA_DIR / "fma_slim_metadata.json"
 
 CLAP_SR    = 48000
 LIBROSA_SR = 22050

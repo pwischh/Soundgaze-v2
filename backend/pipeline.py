@@ -15,7 +15,7 @@ import pandas as pd
 import librosa
 
 from .config import (
-    CLAP_PATH, ACOUSTIC_PATH, SCALER_PATH, REDUCED_DIR, META_DIR,
+    CLAP_PATH, ACOUSTIC_PATH, SCALER_PATH, REDUCED_DIR, META_DIR, SLIM_META_PATH,
     FMA_SMALL_DIR, CLAP_SR, LIBROSA_SR, DURATION, CLAP_LEN, CLAP_BATCH, METHODS,
     DEV_MODE, DEV_LIMIT,
 )
@@ -201,8 +201,17 @@ def load_state() -> None:
     knn_index.fit(hybrid_emb)
 
     # ── FMA metadata ──────────────────────────────────────────────────────────
+    # Prefer slim JSON (committed to repo); fall back to full tracks.csv if present.
     tracks_csv = META_DIR / "tracks.csv"
-    if tracks_csv.exists():
+    if SLIM_META_PATH.exists():
+        import json
+        slim = json.loads(SLIM_META_PATH.read_text())
+        for tid in track_ids:
+            tid = int(tid)
+            rec = slim.get(str(tid))
+            metadata[tid] = rec if rec else {"title": f"Track {tid}", "artist": "Unknown", "genre": "Unknown"}
+        print(f"Metadata loaded from slim JSON ({len(metadata)} tracks)")
+    elif tracks_csv.exists():
         df = pd.read_csv(tracks_csv, index_col=0, header=[0, 1])
         for tid in track_ids:
             tid = int(tid)
